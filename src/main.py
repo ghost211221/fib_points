@@ -126,9 +126,6 @@ if __name__ == '__main__':
     print('done')
     print()
 
-    import sys
-    sys.exit(0)
-
     print('mapping polygons to frames...')
     map_fp = map_frame_polygons(frames, polygons)
     print(f'frames with polygons: {len(map_fp)}')
