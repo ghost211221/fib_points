@@ -3,6 +3,7 @@ import logging
 from datetime import datetime
 from math import ceil
 import os
+from multiprocessing import Pool
 
 from numpy import float64
 
@@ -53,9 +54,7 @@ def map_frame_polygons(frames, polygons):
 
     return map_fp
 
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('gds_file', help="input GDSII file name with path")
     parser.add_argument('direction', default="left-right", help="beam movement direction, possuble valuses are: left-rignt or down-top")
@@ -76,6 +75,8 @@ if __name__ == '__main__':
     config.verbose = args.verbose
     config.frame_points = 4096
     config.output_path = f'output/processed_{datetime.today().strftime("%A_%d_%B_%Y__%I_%M_%S")}'
+
+    os.makedirs(config.output_path, exist_ok=True)
 
     logging.basicConfig(filename='main.log', level=logging.DEBUG)
     log = logging.getLogger(__name__)
@@ -112,7 +113,7 @@ if __name__ == '__main__':
         config.frame_size
     )
     # plot frames
-    config.multiply = 2
+    config.multiply = 1
     plotter = Plotter(ceil(x_max - x_min), ceil(y_max - y_min))
     plotter.plot(
         polygons=polygons,
@@ -131,12 +132,14 @@ if __name__ == '__main__':
     print(f'frames with polygons: {len(map_fp)}')
     print('done')
     print()
-    i = 1
+
     print('processing')
     # calculate step
     config.fib_step = config.frame_size / config.frame_points
     # calculate multiplier
-    config.multiply = config.frame_points / config.frame_size * 2
+    config.multiply = config.frame_points / config.frame_size
+
+    i = 1
     for f, polys in map_fp.items():
         print('-------------------------------')
         print(f'processing {i} of {len(map_fp)} frame\n{f}')
@@ -149,8 +152,6 @@ if __name__ == '__main__':
         print('done')
 
         i += 1
-
-print('\n==============================================')
-print('GDS file processing done')
-
-
+        
+    print('==============================================')
+    print('GDS file processing done')

@@ -1,8 +1,5 @@
-
-from core.config import Config
 from core.primitive import Primitive
 
-config = Config()
 
 class Point(Primitive):
     def __init__(self, x, y):
@@ -26,6 +23,6 @@ class Point(Primitive):
     def to_plot(self, d_x, d_y):
 
         return [
-            (self._x - d_x) * config.multiply,
-            (self._y - d_y) * config.multiply
+            (self._x - d_x),
+            (self._y - d_y)
         ]

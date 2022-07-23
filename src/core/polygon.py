@@ -1,6 +1,3 @@
-from core.config import Config
-
-config = Config()
 from core.primitive import Primitive
 
 
@@ -36,9 +33,9 @@ class Polygon(Primitive):
     def to_plot(self, d_x, d_y):
         points = []
         for l in self.lines:
-            points.append((l.p1.x - d_x) * config.multiply)
-            points.append((l.p1.y - d_y) * config.multiply)
-            points.append((l.p2.x - d_x) * config.multiply)
-            points.append((l.p2.y - d_y) * config.multiply)
+            points.append((l.p1.x - d_x))
+            points.append((l.p1.y - d_y))
+            points.append((l.p2.x - d_x))
+            points.append((l.p2.y - d_y))
 
         return points

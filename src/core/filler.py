@@ -56,7 +56,7 @@ class PointsFiller():
     def fill(self):
         for polygon in self._polygons:
             self.__init_line()
-            while self._i_coord <= self._e_coord:
+            while self._i_coord < self._e_coord:
                 scan_line = self._line_gen()
                 if not scan_line:
                     break
@@ -80,17 +80,18 @@ class PointsFiller():
 
     def __convert_coord(self, coord, is_y=False):
         if is_y:
-            return config.frame_points - int((coord - self._frame.points[0].y) / config.fib_step) - 1
+            return config.frame_points - round((coord - self._frame.points[0].y) / config.fib_step) - 1
 
         return int((coord - self._frame.points[0].x) / config.fib_step)
 
     def print_points(self):
-        path = os.path.join(config.output_path, f'frame_{self._frame}.txt')
+        path = os.path.join(config.output_path, f'frame_{self._frame}.str')
         if not os.path.exists(config.output_path):
             os.makedirs(config.output_path, exist_ok=True)
 
         with open(path, 'w', encoding='utf8') as f:
             f.write('S\n')
+            f.write('1\n')
             f.write(f'{len(self.__points)}\n')
             for p in self.__points:
                 f.write(f'40000 {self.__convert_coord(p.x)} {self.__convert_coord(p.y, True)}\n')
@@ -121,7 +122,7 @@ class PointsFiller():
     def _print_debug(self):
         # print points
         os.mkdir(os.path.join(config.output_path, 'debug'))
-        path = os.path.join(config.output_path, 'debug', f'frame_{self._frame}__not_converted.txt')
+        path = os.path.join(config.output_path, 'debug', f'frame_{self._frame}__not_converted.str')
         with open(path, 'w', encoding='utf8') as f:
             for i, p in enumerate(self.__points):
                 if i % 2048 == 0:
