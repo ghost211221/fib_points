@@ -17,8 +17,10 @@ def create_frame(point, size):
         Line(Point(point.x + size, point.y + size), Point(point.x, point.y + size)),
         Line(Point(point.x, point.y + size), point)
     ]
+    
+    points = [point, Point(point.x + size, point.y), Point(point.x + size, point.y + size), Point(point.x, point.y + size)]
 
-    return Frame(lines)
+    return Frame(lines, points=points)
 
 def create_frames(x_max, x_min, y_max, y_min, size):
     frames = []
@@ -51,16 +53,6 @@ class Frame(Polygon):
         return self.points[2]
 
     def to_plot(self, d_x, d_y):
-        points = []
-        for p in self.points:
-            points += [(p.x - d_x) * config.multiply, (p.y - d_y) * config.multiply]
-
-        return points
-    #     return [
-    #         (self.points[0].x + delta_x) * config.multiply,
-    #         (self.points[0].y + delta_y) * config.multiply,
-    #         (self.points[2].x + delta_x) * config.multiply,
-    #         (self.points[2].y + delta_y) * config.multiply
-    #     ]
+        return [(p.x, p.y) for p in self.points]
 
 

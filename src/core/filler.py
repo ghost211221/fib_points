@@ -78,11 +78,7 @@ class PointsFiller():
 
                 self._i_coord = round(self._i_coord + config.fib_step, 4)
 
-    def __convert_coord(self, coord, is_y=False):
-        if is_y:
-            return config.frame_points - round((coord - self._frame.points[0].y) / config.fib_step) - 1
-
-        return int((coord - self._frame.points[0].x) / config.fib_step)
+    
 
     def print_points(self):
         path = os.path.join(config.output_path, f'frame_{self._frame}.str')
@@ -94,7 +90,7 @@ class PointsFiller():
             f.write('1\n')
             f.write(f'{len(self.__points)}\n')
             for p in self.__points:
-                f.write(f'40000 {self.__convert_coord(p.x)} {self.__convert_coord(p.y, True)}\n')
+                f.write(f'{config.time_in_point} {p.to_print(d_x=self._frame.points[0].x, d_y=0, frame=self._frame)}\n')
 
         if config.debug:
             self._print_debug()
@@ -108,14 +104,15 @@ class PointsFiller():
         if not os.path.exists(os.path.join(config.output_path, 'plots')):
             os.mkdir(os.path.join(config.output_path, 'plots'))
 
-        plotter = Plotter(config.frame_points, config.frame_points)
+        plotter = Plotter(config.frame_points*2, config.frame_points*2)
+        plotter.set_frame(self._frame)
 
         plotter.plot(
-            frames=[self._frame,],
-            polygons=self._polygons,
+            # frames=[self._frame,],
+            # polygons=self._polygons,
             points=self.__points,
-            d_x=self._frame.points[0].x,
-            d_y=self._frame.points[0].y,
+            d_x=0,
+            d_y=0,
             output_path=path
         )
 

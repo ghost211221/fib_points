@@ -3,29 +3,25 @@ from core.point import Point
 
 class Line(Primitive):
     def __init__(self, point1: Point, point2: Point):
-        if point1.x > point2.x:
-            self._p1 = point2
-            self._p2 = point1
-        else:
-            self._p1 = point1
-            self._p2 = point2
+        self._p1 = point1
+        self._p2 = point2
 
         self._a = None
         self._b = None
 
     def __str__(self):
-        return f'({self._p1}), ({self._p2})'
+        return f'{self._p1}\n{self._p2}'
 
     def to_plot(self):
-        return (self.p1.to_plot(), self.p2.to_plot())
+        return (self._p1.to_plot(), self._p2.to_plot())
 
     @property
     def p1(self):
-        return self._p1
+        return self._p2 if self._p1.x > self._p2.x else self._p1
 
     @property
     def p2(self):
-        return self._p2
+        return self._p1 if self._p1.x > self._p2.x else self._p2
 
     @property
     def is_horizontal(self):
@@ -40,7 +36,7 @@ class Line(Primitive):
         """parameter a of line equation y = a * x + b"""
         if not self._a:
             try:
-                self._a = (self._p2.y - self._p1.y) / (self._p2.x - self._p1.x)
+                self._a = (self.p2.y - self.p1.y) / (self.p2.x - self.p1.x)
             except ZeroDivisionError:
                 self._a = None
 
@@ -50,13 +46,13 @@ class Line(Primitive):
     def b(self):
         """parameter b of line equation y = a * x + b"""
         if not self._b:
-            self._b = self._p1.y - self.a * self._p1.x if not self.is_vertical else None
+            self._b = self.p1.y - self.a * self.p1.x if not self.is_vertical else None
 
         return self._b
 
     def intersects(self, line):
         if self.is_vertical and line.is_vertical and \
-           self.p1.x == line.p1.x and (min(self.p2.y - line.p2.y) >= max(self.p1.y, line.p1.y)):
+           self.p1.x == line.p1.x and (min(self.p2.y, line.p2.y) >= max(self.p1.y, line.p1.y)):
             return True
 
         if self.is_horizontal and line.is_horizontal and \
@@ -64,6 +60,17 @@ class Line(Primitive):
             return True
 
         return bool(self.intersection_point(line))
+
+    def co_parallel(self, line):
+        """placed on same line and have shared segment"""
+        if self.is_vertical and line.is_vertical and \
+           self.p1.x == line.p1.x and (min(self.p2.y, line.p2.y) >= max(self.p1.y, line.p1.y)):
+            return True
+
+        if self.a == line.a and self.b == line.b and (min(self.p2.x, line.p2.x) >= max(self.p1.x, line.p1.x)) and \
+           (min(self.p2.y, line.p2.y) >= max(self.p1.y, line.p1.y)):
+
+            return True
 
     def intersection_point(self, line: 'Line'):
         if self.is_vertical and line.is_vertical:
@@ -85,13 +92,25 @@ class Line(Primitive):
         try:
             x = (self.b - line.b) / (line.a - self.a)
             y = self.a * x + self.b
-
-            if line.p1.x <= x <= line.p2.x or line.p2.x <= x <= line.p1.x or \
-               line.p1.y <= y <= line.p2.y or line.p2.y <= y <= line.p1.y:
-                return Point(x, y)
+            p = Point(x, y)
+            if self.point_on_line(p) and line.point_on_line(p):
+                return p
         except Exception:
             return
 
+
+    def point_on_line(self, point):
+        if self.is_vertical:
+            return round(point.x, 6) == round(self.p1.x, 6) and (self.p1.y <= point.y <= self.p2.y or self.p2.y <= point.y <= self.p1.y)
+
+        if self.is_horizontal:
+            return round(point.y, 6) == round(self.p1.y, 6) and (self.p1.x <= point.x <= self.p2.x or self.p2.x <= point.x <= self.p1.x)
+
+        if point.x > max(self.p1.x, self.p2.x) or point.x < min(self.p1.x, self.p2.x) or \
+           point.y > max(self.p1.y, self.p2.y) or point.y < min(self.p1.y, self.p2.y):
+               return
+
+        return round(point.y, 6) == round(self.a * point.x + self.b, 6)
 
 if __name__ == '__main__':
     # test line parameters counting

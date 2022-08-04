@@ -3,16 +3,16 @@ import logging
 from datetime import datetime
 from math import ceil
 import os
+import sys
 from multiprocessing import Pool
 
-from numpy import float64
+from numpy import float64, poly
 
 from core.boundary import Boundary
 from core.config import Config
 from core.filler import PointsFiller
 from core.frame import create_frames
-from core.line import Line
-from core.point import Point
+
 from core.plotter import Plotter
 from gds_parser import GDSParser
 
@@ -24,35 +24,35 @@ def get_boundary(polygons):
 
     for polygon in polygons:
         for point in polygon.points:
-            if not x_max or point.x > x_max:
+            if point.x > x_max:
                 x_max = point.x
-            if not x_min or point.x < x_min:
+            if point.x < x_min:
                 x_min = point.x
-            if not y_max or point.y > y_max:
+            if point.y > y_max:
                 y_max = point.y
-            if not y_min or point.y < y_min:
+            if point.y < y_min:
                 y_min = point.y
 
     return x_max, x_min, y_max, y_min
 
 def map_frame_polygons(frames, polygons):
     """map polygons to frames, one polygon may be placed in several frames"""
-    def _check_polygon_in_frame(frame, polygon):
-        """ whole polygon in frame """
-        for p in polygon.points:
-            if frame.origin.x <= p.x <= frame.foreign.x and frame.origin.y <= p.y <= frame.foreign.y:
-                return True
-
     map_fp = {}
 
     for frame in frames:
         for polygon in polygons:
-            if _check_polygon_in_frame(frame, polygon):
+            if frame.intersect_polygon(polygon):
                 if frame not in map_fp:
                     map_fp[frame] = []
                 map_fp[frame].append(polygon)
 
     return map_fp
+
+def check_drc(polygons):
+    for i, p1 in enumerate(polygons[:-1]):
+        for p2 in polygons[i+1:]:
+            if p1.intersect_polygon(p2):
+                return (p1, p2)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -76,6 +76,11 @@ if __name__ == "__main__":
     config.frame_points = 4096
     config.output_path = f'output/processed_{datetime.today().strftime("%A_%d_%B_%Y__%I_%M_%S")}'
 
+    # calculate step
+    config.fib_step = config.frame_size / config.frame_points
+    # calculate multiplier
+    config.multiply = config.frame_points / config.frame_size
+
     os.makedirs(config.output_path, exist_ok=True)
 
     logging.basicConfig(filename='main.log', level=logging.DEBUG)
@@ -93,7 +98,6 @@ if __name__ == "__main__":
     print('done')
     print()
 
-
     print('extracting boundary')
     x_max, x_min, y_max, y_min = get_boundary(polygons)
     boundary = Boundary()
@@ -102,6 +106,16 @@ if __name__ == "__main__":
     print('done')
     print()
 
+    print('checking drc...')
+    res = check_drc(polygons)
+    if res:
+        p1, p2 = res
+        print(f'Error')
+        print('----------------------------')
+        print(f'polygon\n{p1}\n\nintersects polygon\n{p2}')
+        print('----------------------------')
+        print('Fix GDS and rerun program')
+        sys.exit(0)
 
     # generate frames of defied size
     print('creating frames...')
@@ -134,10 +148,7 @@ if __name__ == "__main__":
     print()
 
     print('processing')
-    # calculate step
-    config.fib_step = config.frame_size / config.frame_points
-    # calculate multiplier
-    config.multiply = config.frame_points / config.frame_size
+
 
     i = 1
     for f, polys in map_fp.items():
@@ -152,6 +163,6 @@ if __name__ == "__main__":
         print('done')
 
         i += 1
-        
+
     print('==============================================')
     print('GDS file processing done')
