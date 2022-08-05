@@ -12,6 +12,14 @@ class Line(Primitive):
     def __str__(self):
         return f'{self._p1}\n{self._p2}'
 
+    @property
+    def projection_x(self):
+        return (min((self.p1.x, self.p2.x)), max((self.p1.x, self.p2.x)))
+
+    @property
+    def projection_y(self):
+        return (min((self.p1.y, self.p2.y)), max((self.p1.y, self.p2.y))) 
+
     def to_plot(self):
         return (self._p1.to_plot(), self._p2.to_plot())
 
@@ -51,6 +59,16 @@ class Line(Primitive):
         return self._b
 
     def intersects(self, line):
+        # check projections, if not overlap -> bypass
+        x1_1, x1_2 = self.projection_x
+        x2_1, x2_2 = line.projection_x
+
+        y1_1, y1_2 = self.projection_y
+        y2_1, y2_2 = line.projection_y
+
+        if not ((min((x1_2, x2_2)) >= max((x1_1, x2_1))) and (min((y1_2, y2_2)) >= max((y1_1, y2_1)))):
+            return
+
         if self.is_vertical and line.is_vertical and \
            self.p1.x == line.p1.x and (min(self.p2.y, line.p2.y) >= max(self.p1.y, line.p1.y)):
             return True
