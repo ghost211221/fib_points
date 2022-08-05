@@ -58,7 +58,7 @@ class Polygon(Primitive):
     def to_plot(self, d_x, d_y):
         points = []
         for p in self.points:
-            points.append((p.x, p.y))
+            points.append((p.x - d_x, p.y - d_y))
 
 
         return points

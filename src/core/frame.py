@@ -17,7 +17,7 @@ def create_frame(point, size):
         Line(Point(point.x + size, point.y + size), Point(point.x, point.y + size)),
         Line(Point(point.x, point.y + size), point)
     ]
-    
+
     points = [point, Point(point.x + size, point.y), Point(point.x + size, point.y + size), Point(point.x, point.y + size)]
 
     return Frame(lines, points=points)
@@ -53,6 +53,6 @@ class Frame(Polygon):
         return self.points[2]
 
     def to_plot(self, d_x, d_y):
-        return [(p.x, p.y) for p in self.points]
+        return [(p.x - d_x, p.y - d_y) for p in self.points]
 
 

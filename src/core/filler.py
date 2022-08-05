@@ -78,8 +78,6 @@ class PointsFiller():
 
                 self._i_coord = round(self._i_coord + config.fib_step, 4)
 
-    
-
     def print_points(self):
         path = os.path.join(config.output_path, f'frame_{self._frame}.str')
         if not os.path.exists(config.output_path):
@@ -90,7 +88,7 @@ class PointsFiller():
             f.write('1\n')
             f.write(f'{len(self.__points)}\n')
             for p in self.__points:
-                f.write(f'{config.time_in_point} {p.to_print(d_x=self._frame.points[0].x, d_y=0, frame=self._frame)}\n')
+                f.write(f'{config.time_in_point} {p.to_print(d_x=0, d_y=0, frame=self._frame)}\n')
 
         if config.debug:
             self._print_debug()

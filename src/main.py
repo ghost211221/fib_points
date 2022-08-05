@@ -50,6 +50,7 @@ def map_frame_polygons(frames, polygons):
 
 def check_drc(polygons):
     for i, p1 in enumerate(polygons[:-1]):
+        print(f'check polygon {i+1} of {len(polygons)}')
         for p2 in polygons[i+1:]:
             if p1.intersect_polygon(p2):
                 return (p1, p2)
